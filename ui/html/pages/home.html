@@ -1,0 +1,23 @@
+{{define "title"}}Home{{end}}
+
+{{define "main"}}
+    <h2>List of All Card Sets</h2>
+    {{if .CardSets}}
+    <table>
+        <tr>
+            <th>Title</th>
+            <th>Created</th>
+            <th>ID</th>
+        </tr>
+        {{range .CardSets}}
+        <tr>
+            <td><a href='/cardset/view/{{.ID}}'>{{.Title}}</a></td>
+            <td>{{.Created | humanDate}}</td>
+            <td>#{{.ID}}</td>
+        </tr>
+        {{end}}
+    </table>
+    {{else}}
+        <p>There's nothing to see here... yet!</p>
+    {{end}}
+{{end}}

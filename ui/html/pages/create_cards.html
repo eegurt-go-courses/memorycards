@@ -1,0 +1,29 @@
+{{define "title"}}Create Cards for {{.CardSet.Title}} {{end}} 
+
+{{define "main"}}
+<h2>{{.CardSet.Title}}</h2>
+<form action="/{{.CardSet.ID}}/cards/create" method="POST">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
+    {{range .Form}}
+    <div>
+        <div>
+            <label>Question:</label>
+            {{with .FieldErrors.question}}
+                <label class="error">{{.}}</label>
+            {{end}}
+            <input type="text" name="question" value="{{.Question}}" />
+        </div>
+        <div>
+            <label>Answer:</label>
+            {{with .FieldErrors.answer}}
+                <label class="error">{{.}}</label>
+            {{end}}
+            <input type="text" name="answer" value="{{.Answer}}" />
+        </div>
+    </div>
+    {{end}}
+    <div>
+        <input type="submit" value="Create card set [2/2]" />
+    </div>
+</form>
+{{end}}

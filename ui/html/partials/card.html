@@ -1,0 +1,5 @@
+{{define "card"}}
+<form action="/card/create" method="POST">
+    <input type="hidden" name="csrf_token" value="{{.CSRFToken}}" />
+</form>
+{{end}}

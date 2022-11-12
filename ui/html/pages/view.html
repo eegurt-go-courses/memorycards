@@ -1,0 +1,26 @@
+{{define "title"}}Card Set: {{.CardSet.ID}}{{end}} 
+
+{{define "main"}}
+    {{with .CardSet}}
+    <div class="card-set">
+        <div class="metadata">
+            <strong>{{.Title}}</strong>
+            <span>#{{.ID}}</span>
+        </div>
+        <div>
+        <table>
+            <tr>
+                <th>Question</th>
+                <th>Answer</th>
+                <th></th>
+            </tr>
+            <tr>
+            </tr>
+        </table>
+        </div>
+        <div class="metadata">
+            <time>Created: {{.Created | humanDate}}</time>
+        </div>
+    </div>
+    {{end}}
+{{end}}
