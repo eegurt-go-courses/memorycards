@@ -28,7 +28,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) cardSetView(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
-	id, err := strconv.Atoi(params.ByName("id"))
+	id, err := strconv.Atoi(params.ByName("card_set_id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -80,7 +80,7 @@ func (app *application) cardSetCreatePost(w http.ResponseWriter, r *http.Request
 
 	form.CheckField(validator.NotBlank(form.Title), "title", "This field cannot be blank")
 	form.CheckField(validator.MaxChars(form.Title, 100), "title", "This field cannot be more than 100 characters long")
-	form.CheckField(validator.PermittedIntRange(form.CardsNumber, 3, 10), "cards_number", "This field must be at range from 3 to 10")
+	form.CheckField(validator.PermittedIntRange(form.CardsNumber, 1, 10), "cards_number", "This field must be at range from 1 to 10")
 
 	if !form.Valid() {
 		data := app.newTemplateData(r)
@@ -104,9 +104,9 @@ func (app *application) cardSetCreatePost(w http.ResponseWriter, r *http.Request
 }
 
 type cardCreateForm struct {
+	ID                  int    `form:"-"`
 	Question            string `form:"question"`
 	Answer              string `form:"answer"`
-	CardsNumber         int    `form:"-"`
 	validator.Validator `form:"-"`
 }
 
@@ -122,15 +122,21 @@ func (app *application) cardsCreate(w http.ResponseWriter, r *http.Request) {
 	app.render(w, http.StatusOK, "create_cards.html", data)
 }
 
+type cardsWrapperForm struct {
+	Questions           map[string]string
+	Answers             map[string]string
+	validator.Validator `form:"-"`
+}
+
 func (app *application) cardsCreatePost(w http.ResponseWriter, r *http.Request) {
 	err := r.ParseForm()
 	if err != nil {
 		app.clientError(w, http.StatusBadRequest)
 	}
 
-	id := app.sessionManager.PopInt(r.Context(), "id")
-	cardsNumber := app.sessionManager.PopInt(r.Context(), "cards-number")
-	var forms = make([]cardCreateForm, cardsNumber)
+	cardSetID := app.sessionManager.PopInt(r.Context(), "id")
+	// cardsNumber := app.sessionManager.PopInt(r.Context(), "cards-number")
+	var forms = cardsWrapperForm{}
 
 	err = app.decodePostForm(r, &forms)
 	if err != nil {
@@ -138,31 +144,36 @@ func (app *application) cardsCreatePost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	for _, form := range forms {
-		form.CheckField(validator.NotBlank(form.Question), "question", "This field cannot be blank")
-		form.CheckField(validator.NotBlank(form.Answer), "answer", "This field cannot be blank")
+	for _, v := range forms.Questions {
+		forms.CheckField(validator.NotBlank(v), "question", "This field cannot be blank")
 	}
 
-	for _, form := range forms {
-		if !form.Valid() {
-			data := app.newTemplateData(r)
-			data.Form = form
-			app.render(w, http.StatusUnprocessableEntity, "create.html", data)
-			return
-		}
+	for _, v := range forms.Answers {
+		forms.CheckField(validator.NotBlank(v), "answer", "This field cannot be blank")
 	}
 
-	for _, form := range forms {
-		err := app.cards.Insert(r.Context(), id, form.Question, form.Answer)
-		if err != nil {
-			app.serverError(w, err)
-			return
+	if !forms.Valid() {
+		data := app.newTemplateData(r)
+		data.Form = forms
+		app.render(w, http.StatusUnprocessableEntity, "create.html", data)
+		return
+	}
+
+	fmt.Println("===============")
+	for q := range forms.Questions {
+		for a := range forms.Answers {
+			fmt.Println(q, a)
+			err := app.cards.Insert(r.Context(), cardSetID, q, a)
+			if err != nil {
+				app.serverError(w, err)
+				return
+			}
 		}
 	}
 
 	app.sessionManager.Put(r.Context(), "flash", "Card set successfully created!")
 
-	http.Redirect(w, r, fmt.Sprintf("/cardset/view/%d", id), http.StatusSeeOther)
+	http.Redirect(w, r, fmt.Sprintf("/cardset/view/%d", cardSetID), http.StatusSeeOther)
 }
 
 type userSignupForm struct {

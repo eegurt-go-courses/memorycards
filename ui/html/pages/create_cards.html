@@ -2,23 +2,24 @@
 
 {{define "main"}}
 <h2>{{.CardSet.Title}}</h2>
-<form action="/{{.CardSet.ID}}/cards/create" method="POST">
+<form action="/cards/create/{{.CardSet.ID}}" method="POST">
     <input type="hidden" name="csrf_token" value="{{.CSRFToken}}">
-    {{range .Form}}
+    {{range $i, $v := .Form}}
     <div>
+        <h3>{{ $i | increment }}</h3>
         <div>
             <label>Question:</label>
-            {{with .FieldErrors.question}}
+            {{with $v.FieldErrors.question}}
                 <label class="error">{{.}}</label>
             {{end}}
-            <input type="text" name="question" value="{{.Question}}" />
+            <input type="text" name="question{{ $i | increment }}" value="{{$v.Question}}" />
         </div>
         <div>
             <label>Answer:</label>
-            {{with .FieldErrors.answer}}
+            {{with $v.FieldErrors.answer}}
                 <label class="error">{{.}}</label>
             {{end}}
-            <input type="text" name="answer" value="{{.Answer}}" />
+            <input type="text" name="answer{{ $i | increment }}" value="{{$v.Answer}}" />
         </div>
     </div>
     {{end}}

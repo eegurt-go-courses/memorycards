@@ -33,8 +33,13 @@ func humanDate(t time.Time) string {
 	return t.Format("02 Jan 2006 at 15:04")
 }
 
+func increment(num int) int {
+	return num + 1
+}
+
 var functions = template.FuncMap{
 	"humanDate": humanDate,
+	"increment": increment,
 }
 
 func newTemplateCache() (map[string]*template.Template, error) {
