@@ -20,7 +20,7 @@ func (m *CardModel) Insert(ctx context.Context, cardSetID int, question string, 
 	query := `INSERT INTO cards (card_set_id, question, answer)
 	VALUES($1, $2, $3)`
 
-	err := m.DB.QueryRow(ctx, query, cardSetID, question, answer).Scan()
+	_, err := m.DB.Exec(ctx, query, cardSetID, question, answer)
 	if err != nil {
 		return err
 	}

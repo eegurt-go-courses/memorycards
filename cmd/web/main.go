@@ -59,6 +59,7 @@ func main() {
 		infoLog:        infoLog,
 		errorLog:       errorLog,
 		cardSets:       &models.CardSetModel{DB: db},
+		cards:          &models.CardModel{DB: db},
 		users:          &models.UserModel{DB: db},
 		templateCache:  templateCache,
 		formDecoder:    formDecoder,

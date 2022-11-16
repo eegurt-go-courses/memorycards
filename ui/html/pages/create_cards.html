@@ -12,14 +12,14 @@
             {{with $v.FieldErrors.question}}
                 <label class="error">{{.}}</label>
             {{end}}
-            <input type="text" name="question{{ $i | increment }}" value="{{$v.Question}}" />
+            <input type="text" name="Questions[{{ $i }}]" value="" />
         </div>
         <div>
             <label>Answer:</label>
             {{with $v.FieldErrors.answer}}
                 <label class="error">{{.}}</label>
             {{end}}
-            <input type="text" name="answer{{ $i | increment }}" value="{{$v.Answer}}" />
+            <input type="text" name="Answers[{{ $i }}]" value="" />
         </div>
     </div>
     {{end}}

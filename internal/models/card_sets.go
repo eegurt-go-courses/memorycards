@@ -14,7 +14,6 @@ type CardSet struct {
 	Title       string
 	Created     time.Time
 	CardsNumber int
-	Cards       Card
 }
 
 type CardSetModel struct {
@@ -44,16 +43,13 @@ func (m *CardSetModel) Insert(ctx context.Context, title string, cardsNumber int
 }
 
 func (m *CardSetModel) Get(ctx context.Context, id int) (*CardSet, error) {
-	query := `SELECT cs.card_set_id, title, created, cards_number, question, answer FROM card_sets cs
-	join cards c using (card_set_id)
+	query := `SELECT cs.card_set_id, cs.title, cs.created, cs.cards_number 
+	FROM card_sets cs
 	WHERE cs.card_set_id = $1`
 
-	var s = &CardSet{}
-	rows, err := m.DB.Query(ctx, query, id)
-	if err != nil {
-		return nil, err
-	}
-	err = rows.Scan(&s.ID, &s.Title, &s.Created, &s.CardsNumber, &s.Cards.Question, &s.Cards.Answer)
+	var cardSet = &CardSet{}
+	row := m.DB.QueryRow(ctx, query, id)
+	err := row.Scan(&cardSet.ID, &cardSet.Title, &cardSet.Created, &cardSet.CardsNumber)
 	if err != nil {
 		if errors.Is(err, pgx.ErrNoRows) {
 			return nil, ErrNoRecord
@@ -62,7 +58,7 @@ func (m *CardSetModel) Get(ctx context.Context, id int) (*CardSet, error) {
 		}
 	}
 
-	return s, nil
+	return cardSet, nil
 }
 
 func (m *CardSetModel) ListAll(ctx context.Context) ([]*CardSet, error) {

@@ -28,7 +28,7 @@ func (app *application) home(w http.ResponseWriter, r *http.Request) {
 func (app *application) cardSetView(w http.ResponseWriter, r *http.Request) {
 	params := httprouter.ParamsFromContext(r.Context())
 
-	id, err := strconv.Atoi(params.ByName("card_set_id"))
+	id, err := strconv.Atoi(params.ByName("id"))
 	if err != nil || id < 1 {
 		app.notFound(w)
 		return
@@ -104,7 +104,6 @@ func (app *application) cardSetCreatePost(w http.ResponseWriter, r *http.Request
 }
 
 type cardCreateForm struct {
-	ID                  int    `form:"-"`
 	Question            string `form:"question"`
 	Answer              string `form:"answer"`
 	validator.Validator `form:"-"`
@@ -123,8 +122,8 @@ func (app *application) cardsCreate(w http.ResponseWriter, r *http.Request) {
 }
 
 type cardsWrapperForm struct {
-	Questions           map[string]string
-	Answers             map[string]string
+	Questions           []string
+	Answers             []string
 	validator.Validator `form:"-"`
 }
 
@@ -135,39 +134,40 @@ func (app *application) cardsCreatePost(w http.ResponseWriter, r *http.Request) 
 	}
 
 	cardSetID := app.sessionManager.PopInt(r.Context(), "id")
-	// cardsNumber := app.sessionManager.PopInt(r.Context(), "cards-number")
-	var forms = cardsWrapperForm{}
+	cardsNumber := app.sessionManager.PopInt(r.Context(), "cards-number")
 
-	err = app.decodePostForm(r, &forms)
+	var form cardsWrapperForm
+	err = app.decodePostForm(r, &form)
 	if err != nil {
-		app.clientError(w, http.StatusBadRequest)
+		app.serverError(w, err)
 		return
 	}
 
-	for _, v := range forms.Questions {
-		forms.CheckField(validator.NotBlank(v), "question", "This field cannot be blank")
+	fmt.Println("===========================================")
+	fmt.Println(form.Answers[1])
+
+	for i := 0; i < cardsNumber; i++ {
+		form.CheckField(validator.NotBlank(form.Questions[i]), "question", "This field cannot be blank")
+		form.CheckField(validator.NotBlank(form.Answers[i]), "answer", "This field cannot be blank")
 	}
 
-	for _, v := range forms.Answers {
-		forms.CheckField(validator.NotBlank(v), "answer", "This field cannot be blank")
+	for i := 0; i < cardsNumber; i++ {
+		if !form.Valid() {
+			data := app.newTemplateData(r)
+			data.Form = form
+			app.render(w, http.StatusUnprocessableEntity, "create_cards.html", data)
+			return
+		}
 	}
 
-	if !forms.Valid() {
-		data := app.newTemplateData(r)
-		data.Form = forms
-		app.render(w, http.StatusUnprocessableEntity, "create.html", data)
-		return
-	}
+	fmt.Println("===========================================")
+	for i := 0; i < cardsNumber; i++ {
+		fmt.Println(i, form.Questions[i], form.Answers[i])
 
-	fmt.Println("===============")
-	for q := range forms.Questions {
-		for a := range forms.Answers {
-			fmt.Println(q, a)
-			err := app.cards.Insert(r.Context(), cardSetID, q, a)
-			if err != nil {
-				app.serverError(w, err)
-				return
-			}
+		err := app.cards.Insert(r.Context(), cardSetID, form.Questions[i], form.Answers[i])
+		if err != nil {
+			app.serverError(w, err)
+			return
 		}
 	}
 
