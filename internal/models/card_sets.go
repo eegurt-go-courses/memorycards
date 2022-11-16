@@ -78,7 +78,7 @@ func (m *CardSetModel) Get(ctx context.Context, id int) (*CardSet, error) {
 				return nil, err
 			}
 		}
-		cardSet.Cards = append(cardSet.Cards, *card)
+		cardSet.Cards[i] = *card
 	}
 
 	return cardSet, nil

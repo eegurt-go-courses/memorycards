@@ -143,9 +143,6 @@ func (app *application) cardsCreatePost(w http.ResponseWriter, r *http.Request) 
 		return
 	}
 
-	fmt.Println("===========================================")
-	fmt.Println(form.Answers[1])
-
 	for i := 0; i < cardsNumber; i++ {
 		form.CheckField(validator.NotBlank(form.Questions[i]), "question", "This field cannot be blank")
 		form.CheckField(validator.NotBlank(form.Answers[i]), "answer", "This field cannot be blank")
@@ -160,10 +157,7 @@ func (app *application) cardsCreatePost(w http.ResponseWriter, r *http.Request) 
 		}
 	}
 
-	fmt.Println("===========================================")
 	for i := 0; i < cardsNumber; i++ {
-		fmt.Println(i, form.Questions[i], form.Answers[i])
-
 		err := app.cards.Insert(r.Context(), cardSetID, form.Questions[i], form.Answers[i])
 		if err != nil {
 			app.serverError(w, err)

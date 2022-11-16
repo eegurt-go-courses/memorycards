@@ -61,8 +61,6 @@ func (app *application) decodePostForm(r *http.Request, dst any) error {
 		return err
 	}
 
-	fmt.Println("===========================================")
-	fmt.Println(r.PostForm)
 	return nil
 }
 

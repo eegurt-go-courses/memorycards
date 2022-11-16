@@ -6,17 +6,18 @@
         <div class="metadata">
             <strong>{{.Title}}</strong>
             <span>#{{.ID}}</span>
-            <p>Number fo cards: {{.CardsNumber}}</p>
+            <p>Number of cards: {{.CardsNumber}}</p>
         </div>
         <div>
         <table>
             <tr>
+                <th>#</th>
                 <th>Question</th>
                 <th>Answer</th>
-                <th></th>
             </tr>
-            {{ range $v := .Cards }}
+            {{ range $i, $v := .Cards }}
                 <tr>
+                    <td>{{ $i | increment }}</td>
                     <td>{{ $v.Question }}</td>
                     <td>{{ $v.Answer }}</td>
                 </tr>
