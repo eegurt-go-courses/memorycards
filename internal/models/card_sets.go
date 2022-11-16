@@ -14,6 +14,7 @@ type CardSet struct {
 	Title       string
 	Created     time.Time
 	CardsNumber int
+	Cards       []Card
 }
 
 type CardSetModel struct {
@@ -47,7 +48,7 @@ func (m *CardSetModel) Get(ctx context.Context, id int) (*CardSet, error) {
 	FROM card_sets cs
 	WHERE cs.card_set_id = $1`
 
-	var cardSet = &CardSet{}
+	cardSet := &CardSet{}
 	row := m.DB.QueryRow(ctx, query, id)
 	err := row.Scan(&cardSet.ID, &cardSet.Title, &cardSet.Created, &cardSet.CardsNumber)
 	if err != nil {
@@ -56,6 +57,28 @@ func (m *CardSetModel) Get(ctx context.Context, id int) (*CardSet, error) {
 		} else {
 			return nil, err
 		}
+	}
+
+	queryCards := `SELECT question, answer
+	FROM cards
+	WHERE card_set_id = $1
+	OFFSET $2 ROW
+	FETCH FIRST 1 ROW ONLY`
+
+	cardSet.Cards = make([]Card, cardSet.CardsNumber)
+	card := &Card{}
+	for i := range cardSet.Cards {
+		row := m.DB.QueryRow(ctx, queryCards, id, i)
+		err = row.Scan(&card.Question, &card.Answer)
+
+		if err != nil {
+			if errors.Is(err, pgx.ErrNoRows) {
+				return nil, ErrNoRecord
+			} else {
+				return nil, err
+			}
+		}
+		cardSet.Cards = append(cardSet.Cards, *card)
 	}
 
 	return cardSet, nil

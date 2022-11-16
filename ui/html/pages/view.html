@@ -15,8 +15,12 @@
                 <th>Answer</th>
                 <th></th>
             </tr>
-            <tr>
-            </tr>
+            {{ range $v := .Cards }}
+                <tr>
+                    <td>{{ $v.Question }}</td>
+                    <td>{{ $v.Answer }}</td>
+                </tr>
+            {{ end }}
         </table>
         </div>
         <div class="metadata">
